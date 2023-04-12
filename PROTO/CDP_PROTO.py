@@ -59,3 +59,6 @@ TLV_VERSION = ""
 
 # This refers to an information block that broadcasts the configured VLAN Trunking Protocol (VTP) management domain name of the system.
 TLV_VTP = ""
+
+# Building the Socket Object
+s = socket.socket(socket.AF_INET, socket.SOCK_RAW)
