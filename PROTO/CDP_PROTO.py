@@ -21,7 +21,9 @@ import socket
 # Type-Length-Value (TLV) Definitions
 
 # This refers to information that includes the network addresses of both the sender and the receiver devices.
-TLV_ADDR = ""
+TLV_DEST_ADDR = ""
+
+TLV_SEND_ADDR = ""
 
 # It pertains to a method for transmitting an application-specific type-length-value (TLV) via the Cisco Discovery Protocol.
 TLV_APPLICATION = ""
@@ -60,5 +62,37 @@ TLV_VERSION = ""
 # This refers to an information block that broadcasts the configured VLAN Trunking Protocol (VTP) management domain name of the system.
 TLV_VTP = ""
 
-# Building the Socket Object
-s = socket.socket(socket.AF_INET, socket.SOCK_RAW)
+# Building CDP Frame Format
+# Ethernet Format
+DEST_ADDR = b'\x01\x00\x0C\xCC\xCC\xCC'
+SEND_ADDR = b''
+
+# LLC Format
+DSAP = b'\xAA'
+SSAP = b'\xAA'
+CTRL = b'\x03'
+OUI = b'\x00\x00\x0C'
+PID = b'\x20\x00'
+
+# CDP Format
+DEVICE_ID = b'\x00\x01'
+ADDRESSES = b'\x00\x02'
+PORT_ID = b'\x00\x03'
+CAPABILITIES = b'\x00\x04'
+SOFTWARE_VERSION = b'\x00\x05'
+PLATFORM = b'\x00\x06'
+PROTOCOL_HELO = b'\x00\x08'
+VTP_MANAGEMENT_DOMAIN = b'\x00\x09'
+TRUST_BITMAP = b'\x00\x12'
+UNTRUSTED_PORT_COS = b'\x00\x13'
+MANAGEMENT_ADDRESSES = b'\x00\x16'
+NATIVE_VLAN = b'\x00\x0a'
+DUPLEX = b'\x00\x0b'
+POWER_AVAILABLE = b'\x00\x1a'
+
+# Building the Raw Socket Object
+s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.htons(3))
+
+
+# Close Socket
+s.close()
