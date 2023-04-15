@@ -18,6 +18,7 @@ Authors:
 
 import socket
 import sys
+import struct
 
 # Type-Length-Value (TLV) Definitions
 
@@ -70,6 +71,11 @@ This will help us when trying to get interface information.
 '''
 
 print(sys.platform)
+n = 0
+for interface in socket.if_nameindex():
+    print(f'[%s] ' % n + interface[1])
+    n += 1
+chosenint = input("Select Interface From Above List (Ex. 0): ")
 
 
 # Building CDP Frame Format
@@ -100,8 +106,19 @@ NATIVE_VLAN = b'\x00\x0a'
 DUPLEX = b'\x00\x0b'
 POWER_AVAILABLE = b'\x00\x1a'
 
-# Building the Raw Socket Object
-s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.htons(3))
+# Get System Type & Build Socket Object Accordingly
+
+if (sys.platform == "win32"):
+    # Building the Raw Socket Object
+    s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
+elif (sys.platform == "Linux"):
+    # Building the Raw Socket Object
+    s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
+else:
+    print("Unsupported Operating System")
+    sys.exit()
+# Binding the Socket
+s.bind()
 
 
 # Close Socket
