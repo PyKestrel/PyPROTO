@@ -19,6 +19,8 @@ Authors:
 import socket
 import sys
 import struct
+import re
+import uuid
 
 # Type-Length-Value (TLV) Definitions
 
@@ -76,12 +78,14 @@ for interface in socket.if_nameindex():
     print(f'[%s] ' % n + interface[1])
     n += 1
 chosenint = input("Select Interface From Above List (Ex. 0): ")
-
+chosenint = int(chosenint)
+print(socket.if_indextoname(2))
 
 # Building CDP Frame Format
 # Ethernet Format
 DEST_ADDR = b'\x01\x00\x0C\xCC\xCC\xCC'
 SEND_ADDR = b''
+ETH_TYPE = b'\x02\x00'
 
 # LLC Format
 DSAP = b'\xAA'
@@ -90,7 +94,13 @@ CTRL = b'\x03'
 OUI = b'\x00\x00\x0C'
 PID = b'\x20\x00'
 
-# CDP Format
+# CDP Fornat
+CDP_VERSION = 2
+CDP_TTL = b'\x01'
+CDP_CHECKSUM = b'\x00\x00'
+
+
+# CDP TLV Format
 DEVICE_ID = b'\x00\x01'
 ADDRESSES = b'\x00\x02'
 PORT_ID = b'\x00\x03'
@@ -105,6 +115,13 @@ MANAGEMENT_ADDRESSES = b'\x00\x16'
 NATIVE_VLAN = b'\x00\x0a'
 DUPLEX = b'\x00\x0b'
 POWER_AVAILABLE = b'\x00\x1a'
+
+# Packing Headers and Appending Payload
+ETH_HEADER = struct.pack('!6s6s2s', DEST_ADDR, SEND_ADDR, ETH_TYPE)
+LLC_FORMAT = struct.pack(DSAP, SSAP, CTRL, OUI, PID)
+CDP_HEADER = struct.pack(CDP_VERSION, CDP_TTL, CDP_CHECKSUM)
+CDP_PAYLOAD = struct.pack()
+
 
 # Get System Type & Build Socket Object Accordingly
 
