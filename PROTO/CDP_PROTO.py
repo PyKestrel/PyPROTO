@@ -17,6 +17,7 @@ Authors:
 '''
 
 import socket
+import sys
 
 # Type-Length-Value (TLV) Definitions
 
@@ -61,6 +62,15 @@ TLV_VERSION = ""
 
 # This refers to an information block that broadcasts the configured VLAN Trunking Protocol (VTP) management domain name of the system.
 TLV_VTP = ""
+
+'''
+Checking for OS Platform
+
+This will help us when trying to get interface information.
+'''
+
+print(sys.platform)
+
 
 # Building CDP Frame Format
 # Ethernet Format
