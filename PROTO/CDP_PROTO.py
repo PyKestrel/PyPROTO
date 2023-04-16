@@ -19,8 +19,6 @@ Authors:
 import socket
 import sys
 import struct
-import re
-import uuid
 
 # Type-Length-Value (TLV) Definitions
 
@@ -66,77 +64,80 @@ TLV_VERSION = ""
 # This refers to an information block that broadcasts the configured VLAN Trunking Protocol (VTP) management domain name of the system.
 TLV_VTP = ""
 
-'''
-Checking for OS Platform
+# Select Mode Of The Program
 
-This will help us when trying to get interface information.
-'''
+MODE = input("[1] Receiver (Listen for CDP frames and print them to the screen)\n[2] Send & Receive (Transmit relevant host data and listen for CDP frames)")
 
-print(sys.platform)
-n = 0
-for interface in socket.if_nameindex():
-    print(f'[%s] ' % n + interface[1])
-    n += 1
-chosenint = input("Select Interface From Above List (Ex. 0): ")
-chosenint = int(chosenint)
-print(socket.if_indextoname(2))
+if (MODE == "1"):
+    print("Receive Mode Selected")
+elif (MODE == "2"):
+    print("Send & Receive Mode Selected")
+    # Print the first 10 available interfaces
+    n = 1
+    while (n <= 10):
+        interface = socket.if_indextoname(n)
+        print(f'[%s] ' % n + interface)
+        n += 1
 
-# Building CDP Frame Format
-# Ethernet Format
-DEST_ADDR = b'\x01\x00\x0C\xCC\xCC\xCC'
-SEND_ADDR = b''
-ETH_TYPE = b'\x02\x00'
+    chosenint = input("Select Interface From Above List (Ex. 1): ")
+    chosenint = int(chosenint)
+    print(socket.if_indextoname(chosenint))
 
-# LLC Format
-DSAP = b'\xAA'
-SSAP = b'\xAA'
-CTRL = b'\x03'
-OUI = b'\x00\x00\x0C'
-PID = b'\x20\x00'
+    # Building CDP Frame Format
+    # Ethernet Format
+    DEST_ADDR = b'\x01\x00\x0C\xCC\xCC\xCC'
+    SEND_ADDR = b''
+    ETH_TYPE = b'\x02\x00'
 
-# CDP Fornat
-CDP_VERSION = 2
-CDP_TTL = b'\x01'
-CDP_CHECKSUM = b'\x00\x00'
+    # LLC Format
+    DSAP = b'\xAA'
+    SSAP = b'\xAA'
+    CTRL = b'\x03'
+    OUI = b'\x00\x00\x0C'
+    PID = b'\x02\x00'
 
+    # CDP Fornat
+    CDP_VERSION = b'\x02'
+    CDP_TTL = b'\x01'
+    CDP_CHECKSUM = b'\x00\x00'
 
-# CDP TLV Format
-DEVICE_ID = b'\x00\x01'
-ADDRESSES = b'\x00\x02'
-PORT_ID = b'\x00\x03'
-CAPABILITIES = b'\x00\x04'
-SOFTWARE_VERSION = b'\x00\x05'
-PLATFORM = b'\x00\x06'
-PROTOCOL_HELO = b'\x00\x08'
-VTP_MANAGEMENT_DOMAIN = b'\x00\x09'
-TRUST_BITMAP = b'\x00\x12'
-UNTRUSTED_PORT_COS = b'\x00\x13'
-MANAGEMENT_ADDRESSES = b'\x00\x16'
-NATIVE_VLAN = b'\x00\x0a'
-DUPLEX = b'\x00\x0b'
-POWER_AVAILABLE = b'\x00\x1a'
+    # CDP TLV Format
+    DEVICE_ID = b'\x00\x01'
+    ADDRESSES = b'\x00\x02'
+    PORT_ID = b'\x00\x03'
+    CAPABILITIES = b'\x00\x04'
+    SOFTWARE_VERSION = b'\x00\x05'
+    PLATFORM = b'\x00\x06'
+    PROTOCOL_HELO = b'\x00\x08'
+    VTP_MANAGEMENT_DOMAIN = b'\x00\x09'
+    TRUST_BITMAP = b'\x00\x12'
+    UNTRUSTED_PORT_COS = b'\x00\x13'
+    MANAGEMENT_ADDRESSES = b'\x00\x16'
+    NATIVE_VLAN = b'\x00\x0a'
+    DUPLEX = b'\x00\x0b'
+    POWER_AVAILABLE = b'\x00\x1a'
 
-# Packing Headers and Appending Payload
-ETH_HEADER = struct.pack('!6s6s2s', DEST_ADDR, SEND_ADDR, ETH_TYPE)
-LLC_FORMAT = struct.pack(DSAP, SSAP, CTRL, OUI, PID)
-CDP_HEADER = struct.pack(CDP_VERSION, CDP_TTL, CDP_CHECKSUM)
-CDP_PAYLOAD = struct.pack()
+    # Packing Headers and Appending Payload
+    ETH_HEADER = struct.pack('!6s6s2s', DEST_ADDR, SEND_ADDR, ETH_TYPE)
+    LLC_FORMAT = struct.pack('!1s1s1s3s2s', DSAP, SSAP, CTRL, OUI, PID)
+    CDP_HEADER = struct.pack('!1s1s2s', CDP_VERSION, CDP_TTL, CDP_CHECKSUM)
+    # CDP_PAYLOAD = struct.pack()
 
+    # Get System Type & Build Socket Object Accordingly
 
-# Get System Type & Build Socket Object Accordingly
+    if (sys.platform == "win32"):
+        # Building the Raw Socket Object
+        s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
+    elif (sys.platform == "Linux"):
+        # Building the Raw Socket Object
+        s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
+    else:
+        print("Unsupported Operating System")
+        sys.exit()
+    # Binding the Socket
+    # s.bind()
 
-if (sys.platform == "win32"):
-    # Building the Raw Socket Object
-    s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
-elif (sys.platform == "Linux"):
-    # Building the Raw Socket Object
-    s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
+    # Close Socket
+    s.close()
 else:
-    print("Unsupported Operating System")
-    sys.exit()
-# Binding the Socket
-s.bind()
-
-
-# Close Socket
-s.close()
+    print("Invalid Mode Selected")
